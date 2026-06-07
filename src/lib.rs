@@ -41,6 +41,10 @@ pub enum Bom {
 
 impl Bom {
     /// Length of this BOM in bytes.
+    ///
+    /// A BOM always occupies at least two bytes, so there is no
+    /// corresponding `is_empty` method.
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(self) -> usize {
         match self {
             Bom::Utf8 => 3,

@@ -4,7 +4,7 @@ use bom_strip::{detect_bom, strip_all, strip_bytes, strip_str, Bom};
 fn utf8_bom() {
     let b = [0xEF, 0xBB, 0xBF, b'h', b'i'];
     assert_eq!(detect_bom(&b), Some(Bom::Utf8));
-    assert_eq!(strip_bytes(&b), &[b'h', b'i']);
+    assert_eq!(strip_bytes(&b), b"hi");
 }
 
 #[test]
@@ -53,6 +53,32 @@ fn strip_all_removes_internal() {
 #[test]
 fn bom_len_table() {
     assert_eq!(Bom::Utf8.len(), 3);
+    assert_eq!(Bom::Utf16Be.len(), 2);
     assert_eq!(Bom::Utf16Le.len(), 2);
+    assert_eq!(Bom::Utf32Be.len(), 4);
     assert_eq!(Bom::Utf32Le.len(), 4);
+}
+
+#[test]
+fn strip_str_no_bom_unchanged() {
+    assert_eq!(strip_str("hello"), "hello");
+    assert_eq!(strip_str(""), "");
+}
+
+#[test]
+fn strip_bytes_utf32_be() {
+    let b = [0, 0, 0xFE, 0xFF, 0, 0, 0, b'a'];
+    assert_eq!(strip_bytes(&b), &[0, 0, 0, b'a']);
+}
+
+#[test]
+fn empty_input_has_no_bom() {
+    let b: &[u8] = &[];
+    assert_eq!(detect_bom(b), None);
+    assert_eq!(strip_bytes(b), b);
+}
+
+#[test]
+fn strip_all_no_feff_unchanged() {
+    assert_eq!(strip_all("abc"), "abc");
 }
